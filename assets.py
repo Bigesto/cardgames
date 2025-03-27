@@ -45,7 +45,7 @@ class Deck:
             self.shuffle_deck(42)
 
     
-    def initialize_deck(self): #initialize the deck used for the game. Depends on DeckType, which should depend on game type.
+    def initialize_deck(self): #Initialise le deck du jeu. Est fonction de DeckType, lui-même fonction du type de jeu.
         self.cards = []
         if self.type == DeckType.FRENCH_SUIT:
             enseignes = ["Pique", "Coeur", "Trefle", "Carreau"]
@@ -80,7 +80,7 @@ class Pile:
         self.ordered = ordered #"increasing" "decreasing"
         self.cards = []
     
-    def make_pile(self, deck): #To set a pile from its size
+    def make_pile(self, deck): #Faire une pile de sa taille (self.size) à partir d'un deck.
         if self.max_size is not None:
             if self.size > self.max_size:
                 raise ValueError("Size > Max-size. Size cannot exceed max-size.")
@@ -99,7 +99,7 @@ class Pile:
         
         return i
 
-    def draw_card(self, draw, qty, hidden=False): #To draw a card from a pile and send it to another pile
+    def draw_card(self, draw, qty, hidden=False): #Pour piocher une carte d'une pile vers une autre (idéalement la pioche vers la main ou la défausse)
         i = 0
         while i < qty and len(draw.cards) > 0:
             card = draw.cards.pop()

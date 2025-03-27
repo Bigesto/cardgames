@@ -1,6 +1,7 @@
 from assets import Card, Deck, DeckType, Pile
 import random
 
+#Classe à appeler pour jouer au Solitaire
 class Solitaire:
     def __init__(self, difficulty):
         self.difficulty = difficulty
@@ -33,7 +34,8 @@ class Solitaire:
             tableau.ordered = "decreasing"
             i += 1
         
-    def select_card(self, temp, card): #pile should be Temp pile.
+        
+    def select_card(self, temp, card): #"temp" désigne la Pile temp initialisée dans le constructeur de Solitaire.
         if not card.face_up:
             return False
         
@@ -41,19 +43,19 @@ class Solitaire:
         if card.top_neighbor != None:
             self.select_card(card.top_neighbor)
         
-        origin = None #This status concerns the pile of origin of the card(s)
+        origin = None #Cette variable va désigner la pile d'origine de la (ou des) carte(s)
         for pile in self.tableaus:
-            if pile.is_origin(card): #method from class Pile in assets.py
+            if pile.is_origin(card): #Méthode issue de la classe Pile, dans assets.
                 origin = pile
                 break
         if not origin:
             raise ValueError(f"Card {card} doesn't have an origin pile. This shouldn't happen!")
 
-        origin.origin = True # it will be droped if the card in unselected via unselect_card() or drop_card() method
+        origin.origin = True #Cet attribut sera supprimé avec les méthodes unselect_card() ou drop_card()
 
         return True
     
-    def unselect_card(self, temp): #temp should be Temp pile.
+    def unselect_card(self, temp): #temp" désigne la Pile temp initialisée dans le constructeur de Solitaire.
         temp.cards.clear()
         
         origin = None
@@ -66,7 +68,7 @@ class Solitaire:
 
         del origin.origin
     
-    def drop_selection(self, temp, destination): # Self should be Temp pile.
+    def drop_selection(self, temp, destination): # temp" désigne la Pile temp initialisée dans le constructeur de Solitaire.
         for card in temp.cards:
             destination.append_build(card)
 
