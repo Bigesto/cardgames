@@ -4,14 +4,25 @@ from assets import Card, Pile
 from gameslogic import Solitaire
 from constants import *
 
-class StartingMenu:
+class Overlay:
     def __init__(self, screen):
         self.screen = screen
         self.screen_width = screen.get_width()
         self.screen_height = screen.get_height()
-    
-    def draw_menu(self):
-        pass
+        self.games = ["Solitaire"]
+        menu_witdh = self.screen_width * MAIN_MENU_RATIO
+        menu_height = self.screen_height * MAIN_MENU_RATIO
+
+        self.menu = pygame.Surface((menu_witdh, menu_height))
+
+    def draw_start_menu(self):
+        games_buttons = []
+        button_ratio = 1 / (len(self.games))
+
+        for game in self.games:
+
+
+
 
 class SolitaireGraphics:
     def __init__(self, screen, solitaire_game):

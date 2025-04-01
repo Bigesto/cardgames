@@ -7,7 +7,7 @@ class Card:
         self.suit = suit #"Atout" "Pique" "Trefle" "Coeur" "Carreau"
         self.name = None
         self.color = None
-        self.face_up = False
+        self.revealed = False
         self.top_neighbor = None
 
         if self.suit != "Atout":
@@ -71,11 +71,11 @@ class Deck:
         random.shuffle(self.cards)
 
 class Pile:
-    def __init__(self, size=None, name=None, max_size=None, face_up_policy="none", accept_rule=None, ordered=None):
+    def __init__(self, size=None, name=None, max_size=None, revealed_policy="none", accept_rule=None, ordered=None):
         self.size = size
         self.name = name
         self.max_size = max_size #to prevent filthy cheaters to fill their sleeves
-        self.face_up_policy = face_up_policy #"none", "top", "all"
+        self.revealed_policy = revealed_policy #"none", "top", "all"
         self.accept_rule = accept_rule #"same_suit" "alternate_colors"
         self.ordered = ordered #"increasing" "decreasing"
         self.cards = []
@@ -90,12 +90,12 @@ class Pile:
                 self.cards.append(deck.cards.pop())
                 i += 1
 
-        if len(self.cards) > 0 and self.face_up_policy == "top":
-            self.cards[-1].face_up = True
+        if len(self.cards) > 0 and self.revealed_policy == "top":
+            self.cards[-1].revealed = True
 
-        elif self.cards and self.face_up_policy == "all":
+        elif self.cards and self.revealed_policy == "all":
             for card in self.cards:
-                card.face_up = True
+                card.revealed = True
         
         return i
 
@@ -104,7 +104,7 @@ class Pile:
         while i < qty and len(draw.cards) > 0:
             card = draw.cards.pop()
             if not hidden:
-                card.face_up = True
+                card.revealed = True
             self.cards.append(card)
             i += 1
 
@@ -122,24 +122,24 @@ class Pile:
         return True
     
     def _are_cards_up(self): #Not only a check, will also turn cards that face the wrong direction.
-        if self.face_up_policy == "top":
-            if not self.cards[-1].face_up:
-                self.cards[-1].face_up = True
+        if self.revealed_policy == "top":
+            if not self.cards[-1].revealed:
+                self.cards[-1].revealed = True
                 return True
             else:
                 return True
         
-        if self.face_up_policy == "all":
+        if self.revealed_policy == "all":
             for card in self.cards:
-                if not card.face_up:
-                    card.face_up = True
+                if not card.revealed:
+                    card.revealed = True
                 else:
                     continue
             return True
         
-        if self.face_up_policy == "none":
-            if self.cards[-1].face_up:
-                self.cards[-1].face_up = False
+        if self.revealed_policy == "none":
+            if self.cards[-1].revealed:
+                self.cards[-1].revealed = False
                 return False
             else:
                 return False
