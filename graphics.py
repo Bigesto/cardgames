@@ -4,25 +4,43 @@ from assets import Card, Pile
 from gameslogic import Solitaire
 from constants import *
 
-class Overlay:
+class Menus:
     def __init__(self, screen):
         self.screen = screen
         self.screen_width = screen.get_width()
         self.screen_height = screen.get_height()
-        self.games = ["Solitaire"]
-        menu_witdh = self.screen_width * MAIN_MENU_RATIO
-        menu_height = self.screen_height * MAIN_MENU_RATIO
 
-        self.menu = pygame.Surface((menu_witdh, menu_height))
+    def draw(self):
+        self.close_button = 
 
-    def draw_start_menu(self):
-        games_buttons = []
-        button_ratio = 1 / (len(self.games))
+class StartMenu(Menus):
+    def __init__(self, screen):
+        super().__init__(screen)
+        self.games_list = GAMES_AVAILABLES
+        self.nb_games_buttons = NB_GAMES_AVAILABLES
+        self.witdh = self.screen_width * MAIN_MENU_RATIO
+        self.height = self.screen_height * MAIN_MENU_RATIO
+        self.menu = pygame.Surface((self.witdh, self.height))
 
-        for game in self.games:
 
+class Buttons:
+    def __init__(self, x, y, width, height, color=(0,0,0), text=None, hover_color=None):
+        self.rect = pygame.Rect(x, y, width, height)
+        self.color = color
+        self.text = text
+        self.hover_color = hover_color
+        self.is_hovered = False
+        self.font = pygame.font.Font(None, 36)
 
+    def draw_button(self, surface):
+        current_color = self.hover_color if self.is_hovered else self.color
 
+        pygame.draw.rect(surface, current_color, self.rect)
+        pygame.draw.rect(surface, (0,0,0), self.rect, 2)
+
+        text_surface = self.font.render(self.text, True, (0, 0, 0))
+        text_rect = text_surface.get_rect(center=self.rect.center)
+        surface.blit(text_surface, text_rect)
 
 class SolitaireGraphics:
     def __init__(self, screen, solitaire_game):
