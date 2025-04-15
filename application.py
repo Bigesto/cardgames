@@ -28,23 +28,34 @@ class App:
             if event.type == pygame.QUIT:
                 self.running = False
             
-            # if event.type == pygame.MOUSEBUTTONDOWN:
-            #     if not self.in_game:
-            #         for button in self.start_menu.games_buttons:
-            #             if button.rect.collidepoint(event.pos):
-                            
+            if not self.in_game:
+                mouse_x, mouse_y = pygame.mouse.get_pos()
+                local_mouse_x = mouse_x - self.start_menu.menu_x
+                local_mouse_y = mouse_y - self.start_menu.menu_y
 
-            if event.type == pygame.MOUSEMOTION:
-                if not self.in_game:
-                    mouse_x, mouse_y = pygame.mouse.get_pos()
-                    local_mouse_x = mouse_x - self.start_menu.menu_x
-                    local_mouse_y = mouse_y - self.start_menu.menu_y
+                if event.type == pygame.MOUSEBUTTONDOWN:
+                    for button in self.start_menu.games_buttons:
+                        if button.rect.collidepoint((local_mouse_x, local_mouse_y)):
+                            self.active_game = button.text
+                            self.load_game()
+                            self.in_game = True
+                            
+                if event.type == pygame.MOUSEMOTION:
                     for button in self.start_menu.games_buttons:
                         if button.rect.collidepoint((local_mouse_x, local_mouse_y)):
                             button.is_hovered = True
                         else:
                             button.is_hovered = False
+
     
+    def load_game(self):
+        if self.active_game == "Solitaire":
+            self.game = Solitaire("easy")
+        
+        else:
+            pygame.QUIT
+
+
     def update(self):
         # Mise à jour de la logique du jeu
         pass
@@ -55,11 +66,12 @@ class App:
 
         if not self.in_game:
             self.start_menu.draw_menu()
-
-
-        # self.graphics = SolitaireGraphics(self.screen)
-        # self.graphics.draw_plateau()
-        # self.screen.blit(self.graphics.plateau, (0,0))
+        
+        else:
+            if self.active_game == "Solitaire":
+                self.graphics = SolitaireGraphics(self.screen, self.game)
+                self.graphics.draw_plateau()
+                self.screen.blit(self.graphics.plateau, (0,0))
 
         
         pygame.display.flip()

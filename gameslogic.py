@@ -8,19 +8,19 @@ class Solitaire:
 
         self.deck = Deck(DeckType.TINY_FRENCH_SUIT, shuffled=True)
         self.stock = Pile(size=52, name="Stock")
-        self.waste = Pile(size=52, name="Stock", face_up_policy="all")
+        self.waste = Pile(size=52, name="Stock", revealed_policy="all")
 
         self.foundation = [
-            Pile(name=f"Foundation_{suit}", face_up_policy="all", accept_rule="same_suit", ordered="increasing")
+            Pile(name=f"Foundation_{suit}", revealed_policy="all", accept_rule="same_suit", ordered="increasing")
             for suit in ["Pique", "Coeur", "Trefle", "Carreau"]
         ]
 
         self.tableaus = [
-            Pile(size=i+1, name=f"Tableau_{i}", face_up_policy="top", accept_rule="alternate_colors", ordered="decreasing")
+            Pile(size=i+1, name=f"Tableau_{i}", revealed_policy="top", accept_rule="alternate_colors", ordered="decreasing")
             for i in range(7)
         ]
 
-        self.temp = Pile(size=20, name="Temp", face_up_policy="all")
+        self.temp = Pile(size=20, name="Temp", revealed_policy="all")
 
         self.initialize_game()
     
@@ -36,7 +36,7 @@ class Solitaire:
         
         
     def select_card(self, temp, card): #"temp" désigne la Pile temp initialisée dans le constructeur de Solitaire.
-        if not card.face_up:
+        if not card.revealed:
             return False
         
         temp.cards.append(card)
@@ -84,7 +84,14 @@ class Solitaire:
             for card in temp.cards:
                 if card in origin.cards:
                     origin.cards.remove(card)
-            origin.cards[-1].face_up = True
+            origin.cards[-1].revealed = True
             origin._are_cards_up()
         del origin.origin
         temp.cards.clear()
+
+    def solitaire_draw_card(self):
+        if self.difficulty == "hard":
+            self.stock.draw_card(self.waste, 3)
+        
+        else:
+            self.stock.draw_card(self.waste, 1)

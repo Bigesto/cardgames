@@ -99,13 +99,13 @@ class Pile:
         
         return i
 
-    def draw_card(self, draw, qty, hidden=False): #Pour piocher une carte d'une pile vers une autre (idéalement la pioche vers la main ou la défausse)
+    def draw_card(self, dest, qty, hidden=False): #Pour piocher une carte d'une pile vers une autre (idéalement la pioche vers la main ou la défausse)
         i = 0
-        while i < qty and len(draw.cards) > 0:
-            card = draw.cards.pop()
+        while i < qty and len(self.cards) > 0:
+            card = self.cards.pop()
             if not hidden:
                 card.revealed = True
-            self.cards.append(card)
+            dest.cards.append(card)
             i += 1
 
         return i

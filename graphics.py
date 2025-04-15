@@ -20,6 +20,9 @@ class StartMenu(Menus):
         self.width = self.screen_width * MAIN_MENU_RATIO
         self.height = self.screen_height * MAIN_MENU_RATIO
         self.menu = pygame.Surface((self.width, self.height))
+
+        self.menu_x = self.screen_width/2 - self.width/2
+        self.menu_y = self.screen_height/2 - self.height/2
         
         self.background = pygame.Rect(0, 0, self.width, self.height)
         self.title_1 = Texts("Choose your")
@@ -121,8 +124,6 @@ class StartMenu(Menus):
         self.title_2.draw_text(self.menu, self.width/2 - self.title_2_dimensions[0]/2, self.height/4 + self.title_1_dimensions[1])
         self.credits.draw_text(self.menu, self.width - self.credits_dimensions[0], self.height - self.credits_dimensions[1])
 
-        self.menu_x = self.screen_width/2 - self.width/2
-        self.menu_y = self.screen_height/2 - self.height/2
         self.screen.blit(self.menu, (self.menu_x, self.menu_y))
 
 class Buttons:
