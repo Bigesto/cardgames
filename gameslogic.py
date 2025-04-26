@@ -10,22 +10,21 @@ class Solitaire:
         self.stock = Pile(size=52, name="Stock")
         self.waste = Pile(size=52, name="Stock", revealed_policy="all")
 
-        self.foundation = [
+        self.foundations = [
             Pile(name=f"Foundation_{suit}", revealed_policy="all", accept_rule="same_suit", ordered="increasing")
             for suit in ["Pique", "Coeur", "Trefle", "Carreau"]
         ]
 
         self.tableaus = [
-            Pile(size=i+1, name=f"Tableau_{i}", revealed_policy="top", accept_rule="alternate_colors", ordered="decreasing")
+            Pile(size=i+1, name=f"Tableau_{i}", revealed_policy="top")
             for i in range(7)
         ]
 
         self.temp = Pile(size=20, name="Temp", revealed_policy="all")
-
-        self.initialize_game()
     
     def initialize_game(self):
         self.stock.make_pile(self.deck)
+        
         i = 0
         for tableau in self.tableaus:
             tableau.make_pile(self.stock)
@@ -33,7 +32,10 @@ class Solitaire:
             tableau.accept_rule = "alternate_colors"
             tableau.ordered = "decreasing"
             i += 1
+            
         
+        
+
         
     def select_card(self, temp, card): #"temp" désigne la Pile temp initialisée dans le constructeur de Solitaire.
         if not card.revealed:
@@ -95,3 +97,24 @@ class Solitaire:
         
         else:
             self.stock.draw_card(self.waste, 1)
+    
+    def clic_card(self, card):
+        # Va détecter la foundation associée à la carte et vérifier si la carte peut y aller.
+        # Sinon, se contentera de sélectionner la carte.
+        for found in self.foundation:
+            if found.name == card.suit:
+                foundation = found
+        if foundation._can_add_card(card):
+            origin = None
+            for pile in self.tableaus:
+                if pile.is_origin(card): #Méthode issue de la classe Pile, dans assets.
+                    origin = pile
+            if self.waste.is_origin(card):
+                origin = self.waste
+            if not origin:
+                raise ValueError(f"Card {card} doesn't have an origin pile. This shouldn't happen!")
+            foundation.cards.append(card)
+            origin.cards.remove(card)
+        
+        else:
+            self.select_card(self.temp, card)

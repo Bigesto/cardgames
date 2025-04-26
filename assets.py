@@ -80,7 +80,7 @@ class Pile:
         self.ordered = ordered #"increasing" "decreasing"
         self.cards = []
     
-    def make_pile(self, deck): #Faire une pile de sa taille (self.size) à partir d'un deck.
+    def make_pile(self, deck): #Faire une pile de sa taille (self.size) à partir d'un deck (ou d'un autre ensemble de cartes).
         if self.max_size is not None:
             if self.size > self.max_size:
                 raise ValueError("Size > Max-size. Size cannot exceed max-size.")

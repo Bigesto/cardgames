@@ -39,6 +39,9 @@ class App:
                             self.active_game = button.text
                             self.load_game()
                             self.in_game = True
+                    
+                    if self.start_menu.close_button.rect.collidepoint((local_mouse_x, local_mouse_y)):
+                        self.running = False
                             
                 if event.type == pygame.MOUSEMOTION:
                     for button in self.start_menu.games_buttons:
@@ -47,13 +50,27 @@ class App:
                         else:
                             button.is_hovered = False
 
+            if self.in_game == True:
+                if self.active_game == "Solitaire":
+                    if event.type == pygame.MOUSEBUTTONDOWN:
+                        
+                        if self.graphics.draw_rect.collidepoint(pygame.mouse.get_pos()) and len(self.game.stock.cards) >= 1:
+                            self.game.solitaire_draw_card()
+                        elif self.graphics.draw_rect.collidepoint(pygame.mouse.get_pos()) and len(self.game.stock.cards) < 1:
+                            self.game.stock.make_pile(self.game.waste)
+
     
     def load_game(self):
         if self.active_game == "Solitaire":
             self.game = Solitaire("easy")
+            self.graphics = SolitaireGraphics(self.screen, self.game)
+            self.graphics.get_cards_graphics()
+            self.game.initialize_game()
+            self.graphics.init_card_stands_positions()
+            self.graphics.resize_cards()
         
         else:
-            pygame.QUIT
+            self.running = False
 
 
     def update(self):
@@ -69,7 +86,6 @@ class App:
         
         else:
             if self.active_game == "Solitaire":
-                self.graphics = SolitaireGraphics(self.screen, self.game)
                 self.graphics.draw_plateau()
                 self.screen.blit(self.graphics.plateau, (0,0))
 
@@ -79,12 +95,10 @@ class App:
     def run(self):
         # Boucle principale du jeu
         while self.running:
+            self.render()
             self.handle_events()
             self.update()
-            self.render()
             self.clock.tick(30)  # 30 FPS
         
         # Nettoyage à la fin
         pygame.quit()
-
-

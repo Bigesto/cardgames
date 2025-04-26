@@ -159,6 +159,15 @@ class Texts:
     def draw_text(self, surface, x, y):
         surface.blit(self.surface, (x , y))
 
+class CardsGraphics:
+    def __init__(self, card, card_surface, position=(0,0)):
+        self.card = card
+        self.surface = card_surface
+        self.position = position
+        self.rect = self.surface.get_rect(topleft=position)
+
+    def draw_card_graphics(self, screen):
+        screen.blit(self.surface, self.position)
 
 class SolitaireGraphics:
     def __init__(self, screen, solitaire_game):
@@ -173,63 +182,135 @@ class SolitaireGraphics:
         gap_ratio = GAP_RATIO_SOLITAIRE
         total_spaces = (2 * bordures_ratio) + ((column_number -1) * gap_ratio)
 
-        card_width = self.screen_width / (column_number + total_spaces)
-        card_height = card_width / FRENCH_SUIT_CARD_RATIO
+        self.card_width = self.screen_width / (column_number + total_spaces)
+        self.card_height = self.card_width / FRENCH_SUIT_CARD_RATIO
 
-        return card_width, card_height
+        return self.card_width, self.card_height
     
     def init_card_stands_positions(self):
-        self.left_stands_positions = []
-        self.right_stands_positions = []
-        card_width, card_height = self.get_card_dim()
-        bordures_size = card_width * BORDURES_RATIO_SOLITAIRE
+        self.left_stands_positions = [] # Positions de la pioche[0] et de la défausse[1].
+        self.right_stands_positions = [] # Positions des foundations [0] à [4].
+        self.tableaus_positions = [] # Positions des tableaus [0] à [6].
+        self.card_width, self.card_height = self.get_card_dim()
+        self.bordures_size = self.card_width * BORDURES_RATIO_SOLITAIRE
+        self.left_side = pygame.Surface((self.card_width + (2 * self.bordures_size), (self.screen_height - self.card_height)))
+        self.right_side = pygame.Surface((self.card_width + (2 * self.bordures_size), (self.screen_height - self.card_height)))
+        self.upper_side = pygame.Surface((self.screen_width, self.card_height))
         
-        y_offset = 2 * bordures_size + card_height  # Ajout de card_height pour l'offset vertical
+        y_offset = 2 * self.bordures_size + self.card_height  # Ajout de card_height pour l'offset vertical
         for _ in range(2):
-            position = (bordures_size, y_offset)
+            position = [self.bordures_size, y_offset]
             self.left_stands_positions.append(position)
-            y_offset += card_height + bordures_size
+            y_offset += self.card_height + self.bordures_size
         
-        y_offset = 2 * bordures_size + card_height
+        self.draw_rect = pygame.Rect(self.left_stands_positions[0][0], self.left_stands_positions[0][1], self.card_width, self.card_height)
+
+        y_offset = 2 * self.bordures_size + self.card_height
         for _ in range(4):
-            position = (self.screen_width - card_width - bordures_size, y_offset)
+            position = [self.screen_width - self.card_width - self.bordures_size, y_offset]
             self.right_stands_positions.append(position)
-            y_offset += card_height + bordures_size
+            y_offset += self.card_height + self.bordures_size
+        
+        available_width = self.screen_width - ((9 * self.card_width) + (4 * self.bordures_size))
+        space_between_tableaus = available_width / 8
+        y = self.card_height + (2 * self.bordures_size)
+        x_offset = self.card_width + (2 * self.bordures_size) + space_between_tableaus
+        for _ in range(7):
+            position = [x_offset, y]
+            self.tableaus_positions.append(position)
+            x_offset += self.card_width + space_between_tableaus
     
+    def resize_cards(self):
+        for key, cardgraph in self.card_visuals.items():
+            scaled_surface = pygame.transform.scale(cardgraph.surface, (self.card_width, self.card_height))
+            cardgraph.surface = scaled_surface
+            cardgraph.rect = scaled_surface.get_rect(topleft=cardgraph.position)
+        
+        self.back_card_visual = pygame.transform.scale(self.back_card_visual, (self.card_width, self.card_height))
+
     def draw_plateau(self):
         if not hasattr(self, 'left_stands_positions'):
-            self.card_width, self.card_height = self.get_card_dim()
-            self.bordures_size = self.card_width * BORDURES_RATIO_SOLITAIRE
             self.init_card_stands_positions()
+            self.resize_cards()
 
         self.plateau = pygame.Surface((self.screen_width, self.screen_height))
         self.plateau.fill((50, 250, 50))
 
-        left_side = pygame.Surface((self.card_width + (2 * self.bordures_size), (self.screen_height - self.card_height)))
-        right_side = pygame.Surface((self.card_width + (2 * self.bordures_size), (self.screen_height - self.card_height)))
-        upper_side = pygame.Surface((self.screen_width, self.card_height))
         card_stand = pygame.Surface((self.card_width, self.card_height))
         
         # Remplir les surfaces
         stand_rect = card_stand.get_rect()
         card_stand.fill((50, 190, 50))
-        left_side.fill((50, 190, 50))
-        right_side.fill((50, 190, 50))
-        upper_side.fill((128, 128, 128))
+        self.left_side.fill((50, 190, 50))
+        self.right_side.fill((50, 190, 50))
+        self.upper_side.fill((128, 128, 128))
         pygame.draw.rect(card_stand, (0, 0, 0), stand_rect, 2)
         
-            # Dessiner les card stands sur les côtés en utilisant les positions précalculées
+        # Dessiner les card stands sur les côtés en utilisant les positions précalculées
+        i = 0
         for pos in self.left_stands_positions:
             # Ajuster la position relative à left_side (soustraire l'offset vertical)
             relative_pos = (pos[0], pos[1] - self.card_height)
-            left_side.blit(card_stand, relative_pos)
+            if i == 0 and len(self.game.stock.cards) < 1:
+                self.left_side.blit(card_stand, relative_pos)
+            elif i == 0 and len(self.game.stock.cards) >= 1:
+                self.left_side.blit(self.back_card_visual, relative_pos)
+
+            if i == 1 and len(self.game.waste.cards) < 1:
+                self.left_side.blit(card_stand, relative_pos)
+            elif i == 1 and len(self.game.waste.cards) >= 1:
+                to_show = (self.game.waste.cards[-1].suit, self.game.waste.cards[-1].value)
+                self.card_visuals[to_show].position = relative_pos
+                self.card_visuals[to_show].draw_card_graphics(self.left_side)
+            i+= 1
         
+        i = 0
         for pos in self.right_stands_positions:
             # Ajuster la position relative à right_side (soustraire l'offset vertical et horizontal)
             relative_pos = (self.bordures_size, pos[1] - self.card_height)
-            right_side.blit(card_stand, relative_pos)
+            if len(self.game.foundations[i].cards) < 1:
+                self.right_side.blit(card_stand, relative_pos)
+            elif len(self.game.foundations[i].cards) <= 1:
+                to_show = (self.game.foundations[i].cards[-1].suit, self.game.foundations[i].cards[-1].value)
+                self.card_visuals[to_show].position = pos
+                self.card_visuals[to_show].draw_card_graphics(self.right_side)
+            i += 1
         
+        i = 0
+        for pos in self.tableaus_positions:
+            if len(self.game.tableaus[i].cards) < 1:
+                self.plateau.blit(card_stand,(pos[0], pos[1]))
+            elif len(self.game.tableaus[i].cards) >= 1:
+                current_pos = pos.copy()
+                for card in self.game.tableaus[i].cards:
+                    if not card.revealed:
+                        self.plateau.blit(self.back_card_visual, current_pos)
+                    else:
+                        to_show = (card.suit, card.value)
+                        self.card_visuals[to_show].position = current_pos
+                        self.card_visuals[to_show].draw_card_graphics(self.plateau)
+                    current_pos[1] += self.card_height * TABLEAUS_PACING
+            i += 1
+
         # Ajouter les surfaces au plateau principal
-        self.plateau.blit(left_side, (0, self.card_height))
-        self.plateau.blit(right_side, (self.screen_width - right_side.get_width(), self.card_height))
-        self.plateau.blit(upper_side, (0, 0))
+        self.plateau.blit(self.left_side, (0, self.card_height))
+        self.plateau.blit(self.right_side, (self.screen_width - self.right_side.get_width(), self.card_height))
+        self.plateau.blit(self.upper_side, (0, 0))
+
+    def get_cards_graphics(self):
+        # Créer le dictionnaire qui contiendra les surfaces au format {(card.suit, card.value): surface}
+        self.card_visuals = {}
+        self.full_deck = pygame.image.load("graphics/Cardsuits.jpg")
+
+        # Le dictionnaire card_line est codé en dur parce que l'image est comme ça.
+        card_line = {"Atout": 4, "Pique": 3, "Trefle": 1, "Coeur": 2, "Carreau": 0}
+        for card in self.game.deck.cards:
+            if card.suit not in card_line or not (1 <= card.value <= 13):
+                raise ValueError(f"Invalid card suit or value: {card.suit}, {card.value}")
+            y = card_line[card.suit] * FRENCH_SUIT_CARD_HEIGHT
+            x = (card.value - 1) * FRENCH_SUIT_CARD_WIDTH
+
+            card_surface = self.full_deck.subsurface(x, y, FRENCH_SUIT_CARD_WIDTH, FRENCH_SUIT_CARD_HEIGHT)
+            self.card_visuals[(card.suit, card.value)] = CardsGraphics(card, card_surface)
+        
+        self.back_card_visual = self.full_deck.subsurface((2 * FRENCH_SUIT_CARD_WIDTH), (4 * FRENCH_SUIT_CARD_HEIGHT), FRENCH_SUIT_CARD_WIDTH, FRENCH_SUIT_CARD_HEIGHT)
