@@ -32,46 +32,48 @@ class Solitaire:
             tableau.accept_rule = "alternate_colors"
             tableau.ordered = "decreasing"
             i += 1
-            
         
-        
-
-        
-    def select_card(self, temp, card): #"temp" désigne la Pile temp initialisée dans le constructeur de Solitaire.
+    def select_card(self, card): # "temp" désigne la Pile temp initialisée dans le constructeur de Solitaire.
         if not card.revealed:
             return False
         
-        temp.cards.append(card)
+        self.temp.cards.append(card)
         if card.top_neighbor != None:
             self.select_card(card.top_neighbor)
         
-        origin = None #Cette variable va désigner la pile d'origine de la (ou des) carte(s)
+        origin = None # Cette variable va désigner la pile d'origine de la (ou des) carte(s)
         for pile in self.tableaus:
-            if pile.is_origin(card): #Méthode issue de la classe Pile, dans assets.
+            if pile.is_origin(card): # Méthode issue de la classe Pile, dans assets.
                 origin = pile
                 break
+        if not origin and hasattr(self.waste, "origin"):
+            origin = self.waste
         if not origin:
-            raise ValueError(f"Card {card} doesn't have an origin pile. This shouldn't happen!")
+            raise ValueError(f"Card {card.suit} {card.value} doesn't have an origin pile. This shouldn't happen!")
 
-        origin.origin = True #Cet attribut sera supprimé avec les méthodes unselect_card() ou drop_card()
+        origin.origin = True # Cet attribut sera supprimé avec les méthodes unselect_card() ou drop_card()
 
         return True
     
-    def unselect_card(self, temp): #temp" désigne la Pile temp initialisée dans le constructeur de Solitaire.
-        temp.cards.clear()
+    def unselect_card(self): #temp" désigne la Pile temp initialisée dans le constructeur de Solitaire.
+        self.temp.cards.clear()
         
         origin = None
         for pile in self.tableaus:
             if hasattr(pile, "origin"):
                 origin = pile
                 break
+        if not origin and hasattr(self.waste, "origin"):
+            origin = self.waste
         if not origin:
             raise ValueError(f"No origin pile. This shouldn't happen!")
 
         del origin.origin
     
-    def drop_selection(self, temp, destination): # temp" désigne la Pile temp initialisée dans le constructeur de Solitaire.
-        for card in temp.cards:
+    def temp_drop_selection(self, destination):
+        # temp désigne la Pile temp initialisée dans le constructeur de Solitaire.
+        
+        for card in self.temp.cards:
             destination.append_build(card)
 
         origin = None
@@ -79,17 +81,19 @@ class Solitaire:
             if hasattr(pile, "origin"):
                 origin = pile
                 break
+        if not origin and hasattr(self.waste, "origin"):
+            origin = self.waste
         if not origin:
             raise ValueError(f"No origin pile. This shouldn't happen!")
         
         if origin.cards:
-            for card in temp.cards:
+            for card in self.temp.cards:
                 if card in origin.cards:
                     origin.cards.remove(card)
             origin.cards[-1].revealed = True
             origin._are_cards_up()
         del origin.origin
-        temp.cards.clear()
+        self.temp.cards.clear()
 
     def solitaire_draw_card(self):
         if self.difficulty == "hard":
@@ -101,9 +105,12 @@ class Solitaire:
     def clic_card(self, card):
         # Va détecter la foundation associée à la carte et vérifier si la carte peut y aller.
         # Sinon, se contentera de sélectionner la carte.
-        for found in self.foundation:
-            if found.name == card.suit:
+        for found in self.foundations:
+            if found.name == f"Foundation_{card.suit}":
                 foundation = found
+        if not foundation:
+            raise ValueError("No foundation found :(")
+
         if foundation._can_add_card(card):
             origin = None
             for pile in self.tableaus:
@@ -117,4 +124,4 @@ class Solitaire:
             origin.cards.remove(card)
         
         else:
-            self.select_card(self.temp, card)
+            self.select_card(card)

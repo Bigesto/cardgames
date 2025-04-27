@@ -53,11 +53,47 @@ class App:
             if self.in_game == True:
                 if self.active_game == "Solitaire":
                     if event.type == pygame.MOUSEBUTTONDOWN:
-                        
-                        if self.graphics.draw_rect.collidepoint(pygame.mouse.get_pos()) and len(self.game.stock.cards) >= 1:
+                        mouse_pos = (pygame.mouse.get_pos())
+                        if self.graphics.draw_rect.collidepoint(mouse_pos) and len(self.game.stock.cards) >= 1: # Piocher
+                            if len(self.game.temp.cards) > 0:
+                                self.game.unselect_card()
                             self.game.solitaire_draw_card()
-                        elif self.graphics.draw_rect.collidepoint(pygame.mouse.get_pos()) and len(self.game.stock.cards) < 1:
+                        elif self.graphics.draw_rect.collidepoint(mouse_pos) and len(self.game.stock.cards) < 1: # Remettre les cartes
+                            if len(self.game.temp.cards) > 0:
+                                self.game.unselect_card()
                             self.game.stock.make_pile(self.game.waste)
+                        
+                        # Cliquer sur une carte piochée (soit la sélection, soit l'envoie sur sa fondation)
+                        if len(self.game.waste.cards) > 0 and len(self.game.temp.cards) == 0:
+                            for card in self.game.waste.cards:
+                                card_visual = self.graphics.card_visuals[(card.suit, card.value)]
+                                if card_visual.rect.collidepoint(mouse_pos):
+                                    self.game.clic_card(card)
+                        elif len(self.game.waste.cards) > 0 and len(self.game.temp.cards) > 0:
+                            self.game.unselect_card()
+                            for card in self.game.waste.cards:
+                                card_visual = self.graphics.card_visuals[(card.suit, card.value)]
+                                if card_visual.rect.collidepoint(mouse_pos):
+                                    self.game.clic_card(card)
+                        
+                        # Cliquer sur une carte d'un tableau.
+                        for tableau in self.game.tableaus:
+                            last_tableau_card = tableau.cards[-1]
+                            if len(tableau.cards) > 0 and len(self.game.temp.cards) == 0: # Sélectionner une carte (et celles qui sont au-dessus)
+                                for card in tableau.cards:
+                                    card_visual = self.graphics.card_visuals[(card.suit, card.value)]
+                                    tableau_end_visual = self.graphics.card_visuals[(last_tableau_card.suit, last_tableau_card.value)]
+                                    if card_visual.visible_rect.collidepoint(mouse_pos) or tableau_end_visual.rect.collidepoint(mouse_pos):
+                                        self.game.clic_card(card)
+                            elif len(tableau.cards) > 0 and len(self.game.temp.cards) > 0: # Libérer la sélection sur un tableau.
+                                card_visual = self.graphics.card_visuals[(last_tableau_card.suit, last_tableau_card.value)]
+                                if card_visual.rect.collidepoint(mouse_pos):
+                                    temp_base_card = self.game.temp.cards[0]
+                                    if tableau._can_add_card(temp_base_card):
+                                        self.game.temp_drop_selection(tableau)
+                            
+                                
+
 
     
     def load_game(self):

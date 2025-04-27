@@ -111,6 +111,11 @@ class Pile:
         return i
     
     def _can_add_card(self, card):
+        if len(self.cards) == 0:
+            if card.value != 13:
+                return False
+            return True
+
         if self.accept_rule == "alternate_colors" and card.color == self.cards[-1].color:
             return False
         if self.accept_rule == "same_suit" and card.suit != self.cards[-1].suit:
@@ -151,15 +156,15 @@ class Pile:
             return True
         return False
     
-    def append_build(self, card): #Utilisé pour libérer une pile sur une autre, carte par carte.
+    def append_build(self, card): # Utilisé pour libérer une pile sur une autre, carte par carte.
         if len(self.cards) < 1 and card.value != 13:
             return False
         
-        # Vérifier si on peut ajouter cette carte au build actuel
+        # Vérifier si on peut ajouter cette carte au build actuel.
         if len(self.cards) > 0 and not self._can_add_card(card):
             return False
             
-        # Ajouter la carte et établir les relations
+        # Ajouter la carte et établir les relations.
         if len(self.cards) > 0:
             self.cards[-1].top_card = card
         self.cards.append(card)

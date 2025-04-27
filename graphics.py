@@ -165,8 +165,11 @@ class CardsGraphics:
         self.surface = card_surface
         self.position = position
         self.rect = self.surface.get_rect(topleft=position)
+        self.visible_rect = None # Sera attribué plus tard, en faisant appel à resize_cards()
 
     def draw_card_graphics(self, screen):
+        self.rect.topleft = self.position
+        self.visible_rect.topleft = self.position
         screen.blit(self.surface, self.position)
 
 class SolitaireGraphics:
@@ -223,8 +226,10 @@ class SolitaireGraphics:
     def resize_cards(self):
         for key, cardgraph in self.card_visuals.items():
             scaled_surface = pygame.transform.scale(cardgraph.surface, (self.card_width, self.card_height))
+            visible_scaled_surface = pygame.transform.scale(cardgraph.surface, (self.card_width, self.card_height * TABLEAUS_PACING))
             cardgraph.surface = scaled_surface
             cardgraph.rect = scaled_surface.get_rect(topleft=cardgraph.position)
+            cardgraph.visible_rect = visible_scaled_surface.get_rect(topleft=cardgraph.position)
         
         self.back_card_visual = pygame.transform.scale(self.back_card_visual, (self.card_width, self.card_height))
 
@@ -297,12 +302,12 @@ class SolitaireGraphics:
         self.plateau.blit(self.right_side, (self.screen_width - self.right_side.get_width(), self.card_height))
         self.plateau.blit(self.upper_side, (0, 0))
 
-    def get_cards_graphics(self):
-        # Créer le dictionnaire qui contiendra les surfaces au format {(card.suit, card.value): surface}
+    def get_cards_graphics(self): # Attention, méthode a appeler AVANT de distribuer les cartes (méthode initialize_game() de gameslogic).
+        # Crée le dictionnaire qui contiendra les surfaces au format {(card.suit, card.value): surface}.
         self.card_visuals = {}
         self.full_deck = pygame.image.load("graphics/Cardsuits.jpg")
 
-        # Le dictionnaire card_line est codé en dur parce que l'image est comme ça.
+        # Le dictionnaire card_line est en dur parce que l'image est organisée comme ça.
         card_line = {"Atout": 4, "Pique": 3, "Trefle": 1, "Coeur": 2, "Carreau": 0}
         for card in self.game.deck.cards:
             if card.suit not in card_line or not (1 <= card.value <= 13):
