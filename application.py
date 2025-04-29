@@ -10,8 +10,8 @@ class App:
         pygame.init()
         
         # Configuration de base
-        self.screen_width = 800
-        self.screen_height = 600
+        self.screen_width = 1024
+        self.screen_height = 768
         self.screen = pygame.display.set_mode((self.screen_width, self.screen_height))
         pygame.display.set_caption("Jeux de Cartes")
         
@@ -54,9 +54,34 @@ class App:
             if self.in_game == True:
                 if self.active_game == "Solitaire":
                     if event.type == pygame.MOUSEBUTTONDOWN:
-                        mouse_pos = (pygame.mouse.get_pos())
-                        # Supprimé. À faire : un switch-case (match-case en l'occurence))
+                        mouse_pos = pygame.mouse.get_pos()
+                        pygame.draw.circle(self.screen, (255, 0, 255), mouse_pos, 5)  # Purple dot
+                        pygame.display.update()  # Force an update to see it
+
+                        if self.graphics.draw_rect.collidepoint(mouse_pos):
+                            if len(self.game.stock.cards) > 0:
+                                self.game.solitaire_draw_card()
+                            else:
+                                self.game.stock.make_pile(self.game.waste)
+                        
+                        elif len(self.game.waste.cards) > 0:
+                            accessible_card_in_waste = self.game.waste.cards[-1]
+                            waste_card = (accessible_card_in_waste.suit, accessible_card_in_waste.value)
+                            rect_pos = self.graphics.card_visuals[waste_card].rect.topleft
+                            rect_size = self.graphics.card_visuals[waste_card].rect.size
+                            print(f"Mouse position: {mouse_pos}")
+                            print(f"Rectangle position: {rect_pos}, size: {rect_size}")
+                            print(f"Is the mouse in rectangle? {self.graphics.card_visuals[waste_card].rect.collidepoint(mouse_pos)}")
+                            print(f"Mouse check: {rect_pos[0] <= mouse_pos[0] <= rect_pos[0] + rect_size[0]} and {rect_pos[1] <= mouse_pos[1] <= rect_pos[1] + rect_size[1]}")
+                            print(f"Last card in draw is {self.game.stock.cards[-1].suit}, {self.game.stock.cards[-1].value}")
+                            print(f"Last card in waste is {accessible_card_in_waste.suit, accessible_card_in_waste.value}")
+                            # if self.graphics.card_visuals[waste_card].rect.collidepoint(mouse_pos):
+                            #     self.game.clic_card(accessible_card_in_waste)
+                        
+                        
+                        # À faire : un switch-case (match-case en l'occurence))
                         # Un case par localisation de clic, je suppose ? Au moins, je pourrais mettre des breaks clairs entre les cases.
+
                                 
 
 

@@ -171,6 +171,9 @@ class CardsGraphics:
         self.rect.topleft = self.position
         self.visible_rect.topleft = self.position
         screen.blit(self.surface, self.position)
+        pygame.draw.rect(screen, (0,0,0), self.rect, 2)
+        pygame.draw.rect(screen, (255,0,0), self.visible_rect, 2)
+        
 
 class SolitaireGraphics:
     def __init__(self, screen, solitaire_game):
@@ -252,22 +255,36 @@ class SolitaireGraphics:
         pygame.draw.rect(card_stand, (0, 0, 0), stand_rect, 2)
         
         # Dessiner les card stands sur les côtés en utilisant les positions précalculées
-        i = 0
-        for pos in self.left_stands_positions:
-            # Ajuster la position relative à left_side (soustraire l'offset vertical)
-            relative_pos = (pos[0], pos[1] - self.card_height)
-            if i == 0 and len(self.game.stock.cards) < 1:
-                self.left_side.blit(card_stand, relative_pos)
-            elif i == 0 and len(self.game.stock.cards) >= 1:
-                self.left_side.blit(self.back_card_visual, relative_pos)
+        stock_position = self.left_stands_positions[0][0], self.left_stands_positions[0][1]
+        waste_position = self.left_stands_positions[1][0], self.left_stands_positions[1][1]
 
-            if i == 1 and len(self.game.waste.cards) < 1:
-                self.left_side.blit(card_stand, relative_pos)
-            elif i == 1 and len(self.game.waste.cards) >= 1:
-                to_show = (self.game.waste.cards[-1].suit, self.game.waste.cards[-1].value)
-                self.card_visuals[to_show].position = relative_pos
-                self.card_visuals[to_show].draw_card_graphics(self.left_side)
-            i+= 1
+        if len(self.game.stock.cards) < 1:
+            self.left_side.blit(card_stand, stock_position)
+        elif len(self.game.stock.cards) >= 1:
+            self.left_side.blit(self.back_card_visual, stock_position)
+        
+        if len(self.game.waste.cards) < 1:
+            self.left_side.blit(card_stand, waste_position)
+        elif len(self.game.waste.cards) >= 1:
+            to_show = (self.game.waste.cards[-1].suit, self.game.waste.cards[-1].value)
+            self.card_visuals[to_show].position = waste_position
+            self.card_visuals[to_show].draw_card_graphics(self.left_side)
+        # i = 0
+        # for pos in self.left_stands_positions:
+        #     # Ajuster la position relative à left_side (soustraire l'offset vertical)
+        #     relative_pos = (pos[0], pos[1] - self.card_height)
+        #     if i == 0 and len(self.game.stock.cards) < 1:
+        #         self.left_side.blit(card_stand, relative_pos)
+        #     elif i == 0 and len(self.game.stock.cards) >= 1:
+        #         self.left_side.blit(self.back_card_visual, relative_pos)
+
+        #     if i == 1 and len(self.game.waste.cards) < 1:
+        #         self.left_side.blit(card_stand, relative_pos)
+        #     elif i == 1 and len(self.game.waste.cards) >= 1:
+        #         to_show = (self.game.waste.cards[-1].suit, self.game.waste.cards[-1].value)
+        #         self.card_visuals[to_show].position = relative_pos
+        #         self.card_visuals[to_show].draw_card_graphics(self.left_side)
+        #     i += 1
         
         i = 0
         for pos in self.right_stands_positions:

@@ -52,7 +52,7 @@ class Solitaire:
             raise ValueError(f"Card {card.suit} {card.value} doesn't have an origin pile. This shouldn't happen!")
 
         origin.origin = True # Cet attribut sera supprimé avec les méthodes unselect_card() ou drop_card()
-
+        print(f"Card selected are {[card.suit for card in self.temp.cards]} {[card.value for card in self.temp.cards]}")
         return True
     
     def unselect_card(self): #temp" désigne la Pile temp initialisée dans le constructeur de Solitaire.
@@ -105,10 +105,14 @@ class Solitaire:
     def clic_card(self, card):
         # Va détecter la foundation associée à la carte et vérifier si la carte peut y aller.
         # Sinon, se contentera de sélectionner la carte.
+        foundation = None
         for found in self.foundations:
             if found.name == f"Foundation_{card.suit}":
                 foundation = found
+                print(foundation)
         if not foundation:
+            print(f"ERROR: Card {card} has suit {card.suit}")
+            print(f"Available foundations: {[f.name for f in self.foundations]}")
             raise ValueError("No foundation found :(")
 
         if foundation._can_add_card(card):
@@ -116,8 +120,10 @@ class Solitaire:
             for pile in self.tableaus:
                 if pile.is_origin(card): #Méthode issue de la classe Pile, dans assets.
                     origin = pile
-            if self.waste.is_origin(card):
+                    break
+            if not origin and self.waste.is_origin(card):
                 origin = self.waste
+
             if not origin:
                 raise ValueError(f"Card {card} doesn't have an origin pile. This shouldn't happen!")
             foundation.cards.append(card)
