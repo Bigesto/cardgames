@@ -77,12 +77,6 @@ class App:
                             print(f"Last card in waste is {accessible_card_in_waste.suit, accessible_card_in_waste.value}")
                             # if self.graphics.card_visuals[waste_card].rect.collidepoint(mouse_pos):
                             #     self.game.clic_card(accessible_card_in_waste)
-                        
-                        
-                        # À faire : un switch-case (match-case en l'occurence))
-                        # Un case par localisation de clic, je suppose ? Au moins, je pourrais mettre des breaks clairs entre les cases.
-
-                                
 
 
     
