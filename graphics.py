@@ -129,6 +129,10 @@ class StartMenu(Menus):
 class InGameMenus(Menus):
     def __init__(self, screen):
         super().__init__(screen)
+        self.width = self.screen_width * GAME_MENU_RATIO
+        self.height = self.screen_height * GAME_MENU_RATIO
+        self.buttons = []
+
 
 class Buttons:
     def __init__(self, x, y, width, height, color=(0,0,0), text=None, hover_color=None):
