@@ -131,7 +131,10 @@ class InGameMenus(Menus):
         super().__init__(screen)
         self.width = self.screen_width * GAME_MENU_RATIO
         self.height = self.screen_height * GAME_MENU_RATIO
-        self.buttons = []
+        self.new_game = Buttons(0, 0, 10, 10, (0,0,0), "New Game", (250, 0, 0))
+        self.quit_game = Buttons(0, 0, 10, 10, (0,0,0), "Quit Game", (250, 0, 0))
+        self.score = Texts("Score is:", text_size=24)
+        self.time = Texts("Time:", 24)
 
 
 class Buttons:
