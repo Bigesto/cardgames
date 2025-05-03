@@ -87,7 +87,10 @@ class Pile:
 
         i = 0
         while i < self.size and len(deck.cards) > 0:
-                self.cards.append(deck.cards.pop())
+                card = deck.cards.pop()
+                if self.name:
+                    card.in_pile = self.name
+                self.cards.append(card)
                 i += 1
 
         if len(self.cards) > 0 and self.revealed_policy == "top":
@@ -112,17 +115,21 @@ class Pile:
     
     def _can_add_card(self, card):
         if len(self.cards) == 0:
-            if card.value != 13:
-                return False
+            if self.ordered == "increasing":
+                if card.value != 1:
+                    return False
+            if self.ordered == "decreasing":
+                if card.value != 13:
+                    return False
             return True
 
         if self.accept_rule == "alternate_colors" and card.color == self.cards[-1].color:
             return False
         if self.accept_rule == "same_suit" and card.suit != self.cards[-1].suit:
             return False
-        if self.ordered == "increasing" and card.value <= self.cards[-1].value:
+        if self.ordered == "increasing" and not card.value == (self.cards[-1].value + 1):
             return False
-        if self.ordered == "decreasing" and card.value >= self.cards[-1].value:
+        if self.ordered == "decreasing" and not card.value == (self.cards[-1].value - 1):
             return False
         return True
     
@@ -153,7 +160,9 @@ class Pile:
     
     def is_origin(self, card): #Used to set a pile as origin of the cards in select_card() method (in gameslogic.py)
         if card in self.cards:
+            print(f"{self.name} is origin")
             return True
+        print("no origin")
         return False
     
     def append_build(self, card): # Utilisé pour libérer une pile sur une autre, carte par carte.

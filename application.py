@@ -39,7 +39,7 @@ class App:
                             self.active_game = button.text
                             self.load_game()
                             self.in_game = True
-                            break
+                            return
                     
                     if self.start_menu.close_button.rect.collidepoint((local_mouse_x, local_mouse_y)):
                         self.running = False
@@ -61,25 +61,40 @@ class App:
                         if self.graphics.draw_rect.collidepoint(mouse_pos):
                             if len(self.game.stock.cards) > 0:
                                 self.game.solitaire_draw_card()
+                                return
                             else:
                                 self.game.stock.make_pile(self.game.waste)
+                                return
                         
                         elif len(self.game.waste.cards) > 0:
                             accessible_card_in_waste = self.game.waste.cards[-1]
                             waste_card = (accessible_card_in_waste.suit, accessible_card_in_waste.value)
-                            rect_pos = self.graphics.card_visuals[waste_card].rect.topleft
-                            rect_size = self.graphics.card_visuals[waste_card].rect.size
-                            print(f"Mouse position: {mouse_pos}")
-                            print(f"Rectangle position: {rect_pos}, size: {rect_size}")
-                            print(f"Is the mouse in rectangle? {self.graphics.card_visuals[waste_card].rect.collidepoint(mouse_pos)}")
-                            print(f"Mouse check: {rect_pos[0] <= mouse_pos[0] <= rect_pos[0] + rect_size[0]} and {rect_pos[1] <= mouse_pos[1] <= rect_pos[1] + rect_size[1]}")
-                            print(f"Last card in draw is {self.game.stock.cards[-1].suit}, {self.game.stock.cards[-1].value}")
-                            print(f"Last card in waste is {accessible_card_in_waste.suit, accessible_card_in_waste.value}")
-                            # if self.graphics.card_visuals[waste_card].rect.collidepoint(mouse_pos):
-                            #     self.game.clic_card(accessible_card_in_waste)
+                            if self.graphics.card_visuals[waste_card].rect.collidepoint(mouse_pos):
+                                self.game.clic_card(accessible_card_in_waste)
+                                return
+                        
+                        for pile in self.game.tableaus:
+                            for card in pile.cards:
+                                card_graph = (card.suit, card.value)
+                                if self.graphics.card_visuals[card_graph].visible_rect.collidepoint(mouse_pos):
+                                    self.game.clic_card(card, pile)
+                                    return
+                                elif card == pile.cards[-1] and self.graphics.card_visuals[card_graph].rect.collidepoint(mouse_pos):
+                                    self.game.clic_card(card, pile)
+                                    return
+                        
+                        for fundation in self.game.foundations:
+                            if len(fundation.cards) > 0:
+                                card = fundation.cards[-1]
+                                card_graph = (card.suit, card.value)
+                                if self.graphics.card_visuals[card_graph].rect.collidepoint(mouse_pos):
+                                    if len(self.game.temp.cards) == 0:
+                                        self.game.select_card(card)
+                                        return
+                                    else:
+                                        self.game.unselect_card()
+                                        return
 
-
-    
     def load_game(self):
         if self.active_game == "Solitaire":
             self.game = Solitaire("easy")

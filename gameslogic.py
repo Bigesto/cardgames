@@ -46,7 +46,13 @@ class Solitaire:
             if pile.is_origin(card): # Méthode issue de la classe Pile, dans assets.
                 origin = pile
                 break
-        if not origin and hasattr(self.waste, "origin"):
+        
+        if not origin:
+            for foundation in self.foundations:
+                if foundation.is_origin(card):
+                    origin = foundation
+                    break
+        if not origin and self.waste.is_origin(card):
             origin = self.waste
         if not origin:
             raise ValueError(f"Card {card.suit} {card.value} doesn't have an origin pile. This shouldn't happen!")
@@ -63,6 +69,11 @@ class Solitaire:
             if hasattr(pile, "origin"):
                 origin = pile
                 break
+        if not origin:
+            for foundation in self.foundations:
+                if hasattr(foundation, "origin"):
+                    origin = foundation
+                    break
         if not origin and hasattr(self.waste, "origin"):
             origin = self.waste
         if not origin:
@@ -90,8 +101,9 @@ class Solitaire:
             for card in self.temp.cards:
                 if card in origin.cards:
                     origin.cards.remove(card)
-            origin.cards[-1].revealed = True
-            origin._are_cards_up()
+            if len(origin.cards) > 0:
+                origin.cards[-1].revealed = True
+                origin._are_cards_up()
         del origin.origin
         self.temp.cards.clear()
 
@@ -102,18 +114,28 @@ class Solitaire:
         else:
             self.stock.draw_card(self.waste, 1)
     
-    def clic_card(self, card):
+    def clic_card(self, card, destination=None):
         # Va détecter la foundation associée à la carte et vérifier si la carte peut y aller.
         # Sinon, se contentera de sélectionner la carte.
         foundation = None
         for found in self.foundations:
+            if card in found.cards:
+                self.select_card(card)
+                return
             if found.name == f"Foundation_{card.suit}":
                 foundation = found
-                print(foundation)
+                print(f"{foundation.name} is foundation")
+                break
         if not foundation:
-            print(f"ERROR: Card {card} has suit {card.suit}")
-            print(f"Available foundations: {[f.name for f in self.foundations]}")
             raise ValueError("No foundation found :(")
+        
+        if len(self.temp.cards) > 0:
+            if destination and destination._can_add_card(self.temp.cards[0]):
+                self.temp_drop_selection(destination)
+                return
+            self.unselect_card()
+            print("cards unselected")
+            return
 
         if foundation._can_add_card(card):
             origin = None
@@ -121,13 +143,16 @@ class Solitaire:
                 if pile.is_origin(card): #Méthode issue de la classe Pile, dans assets.
                     origin = pile
                     break
-            if not origin and self.waste.is_origin(card):
+            
+            if origin == None and self.waste.is_origin(card):
                 origin = self.waste
 
-            if not origin:
+            if origin == None:
                 raise ValueError(f"Card {card} doesn't have an origin pile. This shouldn't happen!")
-            foundation.cards.append(card)
-            origin.cards.remove(card)
+            
+            if card == origin.cards[-1]:
+                foundation.cards.append(card)
+                origin.cards.remove(card)
         
         else:
             self.select_card(card)

@@ -253,7 +253,8 @@ class SolitaireGraphics:
     def draw_plateau(self):
         if not hasattr(self, 'left_stands_positions'):
             self.init_card_stands_positions()
-            self.resize_cards()
+        
+        self.resize_cards()
 
         card_stand = pygame.Surface((self.card_width, self.card_height))
         
@@ -280,22 +281,6 @@ class SolitaireGraphics:
             to_show = (self.game.waste.cards[-1].suit, self.game.waste.cards[-1].value)
             self.card_visuals[to_show].position = waste_position
             self.card_visuals[to_show].draw_card_graphics(self.left_side)
-        # i = 0
-        # for pos in self.left_stands_positions:
-        #     # Ajuster la position relative à left_side (soustraire l'offset vertical)
-        #     relative_pos = (pos[0], pos[1] - self.card_height)
-        #     if i == 0 and len(self.game.stock.cards) < 1:
-        #         self.left_side.blit(card_stand, relative_pos)
-        #     elif i == 0 and len(self.game.stock.cards) >= 1:
-        #         self.left_side.blit(self.back_card_visual, relative_pos)
-
-        #     if i == 1 and len(self.game.waste.cards) < 1:
-        #         self.left_side.blit(card_stand, relative_pos)
-        #     elif i == 1 and len(self.game.waste.cards) >= 1:
-        #         to_show = (self.game.waste.cards[-1].suit, self.game.waste.cards[-1].value)
-        #         self.card_visuals[to_show].position = relative_pos
-        #         self.card_visuals[to_show].draw_card_graphics(self.left_side)
-        #     i += 1
         
         i = 0
         for pos in self.right_stands_positions:
@@ -303,7 +288,7 @@ class SolitaireGraphics:
             relative_pos = (self.bordures_size, pos[1])
             if len(self.game.foundations[i].cards) < 1:
                 self.right_side.blit(card_stand, relative_pos)
-            elif len(self.game.foundations[i].cards) <= 1:
+            elif len(self.game.foundations[i].cards) >= 1:
                 to_show = (self.game.foundations[i].cards[-1].suit, self.game.foundations[i].cards[-1].value)
                 self.card_visuals[to_show].position = pos
                 self.card_visuals[to_show].draw_card_graphics(self.right_side)
