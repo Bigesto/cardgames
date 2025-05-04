@@ -8,7 +8,7 @@ class Solitaire:
 
         self.deck = Deck(DeckType.TINY_FRENCH_SUIT, shuffled=True)
         self.stock = Pile(size=52, name="Stock")
-        self.waste = Pile(size=52, name="Stock", revealed_policy="all")
+        self.waste = Pile(size=52, name="Waste", revealed_policy="all")
 
         self.foundations = [
             Pile(name=f"Foundation_{suit}", revealed_policy="all", accept_rule="same_suit", ordered="increasing")
@@ -32,80 +32,6 @@ class Solitaire:
             tableau.accept_rule = "alternate_colors"
             tableau.ordered = "decreasing"
             i += 1
-        
-    def select_card(self, card): # "temp" désigne la Pile temp initialisée dans le constructeur de Solitaire.
-        if not card.revealed:
-            return False
-        
-        self.temp.cards.append(card)
-        if card.top_neighbor != None:
-            self.select_card(card.top_neighbor)
-        
-        origin = None # Cette variable va désigner la pile d'origine de la (ou des) carte(s)
-        for pile in self.tableaus:
-            if pile.is_origin(card): # Méthode issue de la classe Pile, dans assets.
-                origin = pile
-                break
-        
-        if not origin:
-            for foundation in self.foundations:
-                if foundation.is_origin(card):
-                    origin = foundation
-                    break
-        if not origin and self.waste.is_origin(card):
-            origin = self.waste
-        if not origin:
-            raise ValueError(f"Card {card.suit} {card.value} doesn't have an origin pile. This shouldn't happen!")
-
-        origin.origin = True # Cet attribut sera supprimé avec les méthodes unselect_card() ou drop_card()
-        print(f"Card selected are {[card.suit for card in self.temp.cards]} {[card.value for card in self.temp.cards]}")
-        return True
-    
-    def unselect_card(self): #temp" désigne la Pile temp initialisée dans le constructeur de Solitaire.
-        self.temp.cards.clear()
-        
-        origin = None
-        for pile in self.tableaus:
-            if hasattr(pile, "origin"):
-                origin = pile
-                break
-        if not origin:
-            for foundation in self.foundations:
-                if hasattr(foundation, "origin"):
-                    origin = foundation
-                    break
-        if not origin and hasattr(self.waste, "origin"):
-            origin = self.waste
-        if not origin:
-            raise ValueError(f"No origin pile. This shouldn't happen!")
-
-        del origin.origin
-    
-    def temp_drop_selection(self, destination):
-        # temp désigne la Pile temp initialisée dans le constructeur de Solitaire.
-        
-        for card in self.temp.cards:
-            destination.append_build(card)
-
-        origin = None
-        for pile in self.tableaus:
-            if hasattr(pile, "origin"):
-                origin = pile
-                break
-        if not origin and hasattr(self.waste, "origin"):
-            origin = self.waste
-        if not origin:
-            raise ValueError(f"No origin pile. This shouldn't happen!")
-        
-        if origin.cards:
-            for card in self.temp.cards:
-                if card in origin.cards:
-                    origin.cards.remove(card)
-            if len(origin.cards) > 0:
-                origin.cards[-1].revealed = True
-                origin._are_cards_up()
-        del origin.origin
-        self.temp.cards.clear()
 
     def solitaire_draw_card(self):
         if self.difficulty == "hard":
@@ -114,45 +40,126 @@ class Solitaire:
         else:
             self.stock.draw_card(self.waste, 1)
     
-    def clic_card(self, card, destination=None):
-        # Va détecter la foundation associée à la carte et vérifier si la carte peut y aller.
-        # Sinon, se contentera de sélectionner la carte.
+    def solitaire_clic_card_in_waste(self, card): # "card" doit être la dernière carte de la pile waste.cards.
+        if not card in self.waste.cards:
+            return False
+        if not card == self.waste.cards[-1]:
+            return False
+
         foundation = None
         for found in self.foundations:
-            if card in found.cards:
-                self.select_card(card)
-                return
             if found.name == f"Foundation_{card.suit}":
                 foundation = found
-                print(f"{foundation.name} is foundation")
-                break
         if not foundation:
-            raise ValueError("No foundation found :(")
+            raise ValueError(f"""No foundation found, this should not happen. Card foundation should be "Foundation_{card.suit}".""")
         
-        if len(self.temp.cards) > 0:
-            if destination and destination._can_add_card(self.temp.cards[0]):
-                self.temp_drop_selection(destination)
-                return
-            self.unselect_card()
-            print("cards unselected")
-            return
-
         if foundation._can_add_card(card):
-            origin = None
-            for pile in self.tableaus:
-                if pile.is_origin(card): #Méthode issue de la classe Pile, dans assets.
-                    origin = pile
-                    break
-            
-            if origin == None and self.waste.is_origin(card):
-                origin = self.waste
-
-            if origin == None:
-                raise ValueError(f"Card {card} doesn't have an origin pile. This shouldn't happen!")
-            
-            if card == origin.cards[-1]:
-                foundation.cards.append(card)
-                origin.cards.remove(card)
+            foundation.cards.append(self.waste.cards.pop())
+            card.in_pile = foundation.name
+            return True
         
-        else:
-            self.select_card(card)
+        for tableau in self.tableaus:
+            if tableau._can_add_card(card):
+                tableau.cards.append(self.waste.cards.pop())
+                card.in_pile = tableau.name
+                return True
+        
+        return False
+        
+    def solitaire_clic_card_in_foundation(self, card): #card doit être la dernière carte de sa pile.
+        foundation = None
+        for found in self.foundations:
+            if found.name == card.in_pile:
+                foundation = found
+        
+        if not foundation:
+            raise ValueError(f"""No foundation found, this should not happen. Card foundation should be "Foundation_{card.suit}".""")
+        if not card in foundation.cards:
+            raise ValueError("Card is not in this foundation, but should be...")
+        if not card == foundation.cards[-1]:
+            print("This is not the last card in this foundation...")
+            return False
+        
+        for tableau in self.tableaus:
+            if tableau._can_add_card(card):
+                tableau.cards.append(foundation.cards.pop())
+                card.in_pile = tableau.name
+                return True
+        
+        return False
+        
+    def solitaire_clic_card_in_tableau(self, card):
+        tableau = None
+        foundation = None
+        position = None
+
+        for found in self.foundations:
+            if found.name == f"Foundation_{card.suit}":
+                foundation = found
+        if not foundation:
+            raise ValueError(f"""No foundation found, this should not happen. Card foundation should be "Foundation_{card.suit}".""")
+
+        for tab in self.tableaus:
+            if tab.name == card.in_pile:
+                tableau = tab
+                position = tableau.index(card)
+        if not tableau:
+            raise ValueError(f"""No tableau found, this should not happen.""")
+        
+        if foundation._can_add_card(card) and card == tableau.cards[-1]:
+            foundation.cards.append(tableau.cards.pop())
+            card.in_pile = foundation.name
+            return True
+        
+        for tab in self.tableaus:
+            if tab.name == tableau.name:
+                continue
+            if tab._can_add_card(card):
+                cards_to_move = tableau.cards[position:]
+                for card in cards_to_move:
+                    card.in_pile = tab.name
+                tab.cards.extend(cards_to_move)
+                tableau.cards[position:] = []
+                return True
+        
+        return False
+
+        # foundation = None
+        # for found in self.foundations:
+        #     if card in found.cards:
+        #         self.select_card(card)
+        #         return
+        #     if found.name == f"Foundation_{card.suit}":
+        #         foundation = found
+        #         print(f"{foundation.name} is foundation")
+        #         break
+        # if not foundation:
+        #     raise ValueError("No foundation found :(")
+        
+        # if len(self.temp.cards) > 0:
+        #     if destination and destination._can_add_card(self.temp.cards[0]):
+        #         self.temp_drop_selection(destination)
+        #         return
+        #     self.unselect_card()
+        #     print("cards unselected")
+        #     return
+
+        # if foundation._can_add_card(card):
+        #     origin = None
+        #     for pile in self.tableaus:
+        #         if pile.is_origin(card): #Méthode issue de la classe Pile, dans assets.
+        #             origin = pile
+        #             break
+            
+        #     if origin == None and self.waste.is_origin(card):
+        #         origin = self.waste
+
+        #     if origin == None:
+        #         raise ValueError(f"Card {card} doesn't have an origin pile. This shouldn't happen!")
+            
+        #     if card == origin.cards[-1]:
+        #         foundation.cards.append(card)
+        #         origin.cards.remove(card)
+        
+        # else:
+        #     self.select_card(card)

@@ -7,6 +7,7 @@ class Card:
         self.suit = suit #"Atout" "Pique" "Trefle" "Coeur" "Carreau"
         self.name = None
         self.color = None
+        self.in_pile = None
         self.revealed = False
         self.top_neighbor = None
 
@@ -108,6 +109,8 @@ class Pile:
             card = self.cards.pop()
             if not hidden:
                 card.revealed = True
+            if dest.name:
+                card.in_pile = dest.name
             dest.cards.append(card)
             i += 1
 
