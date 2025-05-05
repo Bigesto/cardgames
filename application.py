@@ -54,46 +54,64 @@ class App:
             if self.in_game == True:
                 if self.active_game == "Solitaire":
                     if event.type == pygame.MOUSEBUTTONDOWN:
-                        mouse_pos = pygame.mouse.get_pos()
+                        mouse_pos =  pygame.mouse.get_pos()
+                        middle_mouse_pos = self.solitaire_get_middle_offset(mouse_pos)
+                        right_mouse_pos = self.solitaire_get_right_offset(mouse_pos)
                         pygame.draw.circle(self.screen, (255, 0, 255), mouse_pos, 5)  # Purple dot
                         pygame.display.update()  # Force an update to see it
 
-                        if self.graphics.draw_rect.collidepoint(mouse_pos):
-                            if len(self.game.stock.cards) > 0:
-                                self.game.solitaire_draw_card()
-                                return
-                            else:
-                                self.game.stock.make_pile(self.game.waste)
-                                return
-                        
-                        elif len(self.game.waste.cards) > 0:
-                            accessible_card_in_waste = self.game.waste.cards[-1]
-                            waste_card = (accessible_card_in_waste.suit, accessible_card_in_waste.value)
-                            if self.graphics.card_visuals[waste_card].rect.collidepoint(mouse_pos):
-                                self.game.clic_card(accessible_card_in_waste)
-                                return
-                        
-                        for pile in self.game.tableaus:
-                            for card in pile.cards:
-                                card_graph = (card.suit, card.value)
-                                if self.graphics.card_visuals[card_graph].visible_rect.collidepoint(mouse_pos):
-                                    self.game.clic_card(card, pile)
+                        if self.graphics.left_side_rect.collidepoint(mouse_pos):
+                            if self.graphics.draw_rect.collidepoint(mouse_pos):
+                                if len(self.game.stock.cards) > 0:
+                                    self.game.solitaire_draw_card()
+                                    print("Draw a card!")
                                     return
-                                elif card == pile.cards[-1] and self.graphics.card_visuals[card_graph].rect.collidepoint(mouse_pos):
-                                    self.game.clic_card(card, pile)
+                                else:
+                                    self.game.stock.make_pile(self.game.waste)
+                                    print("Redo the stock!")
+                                    return
+                            
+                            elif len(self.game.waste.cards) > 0:
+                                accessible_card_in_waste = self.game.waste.cards[-1]
+                                waste_card = (accessible_card_in_waste.suit, accessible_card_in_waste.value)
+                                if self.graphics.card_visuals[waste_card].rect.collidepoint(mouse_pos):
+                                    self.game.solitaire_clic_card_in_waste(accessible_card_in_waste)
+                                    print(f"Clic on card.rect in waste!")
                                     return
                         
-                        for fundation in self.game.foundations:
-                            if len(fundation.cards) > 0:
-                                card = fundation.cards[-1]
-                                card_graph = (card.suit, card.value)
-                                if self.graphics.card_visuals[card_graph].rect.collidepoint(mouse_pos):
-                                    if len(self.game.temp.cards) == 0:
-                                        self.game.select_card(card)
-                                        return
-                                    else:
-                                        self.game.unselect_card()
-                                        return
+                        elif self.graphics.right_side_rect.collidepoint(mouse_pos):
+                            for foundation in self.game.foundations:
+                                if len(foundation.cards) == 0:
+                                    continue
+
+                                accessible_card = foundation.cards[-1]
+                                foundation_card = (accessible_card.suit, accessible_card.value)
+                                if self.graphics.card_visuals[foundation_card].rect.collidepoint(right_mouse_pos):
+                                    self.game.solitaire_clic_card_in_foundation(foundation_card)
+                                    print(f"Clic on card.rect in foundation {foundation.name}!")
+                                    return
+                        
+                        elif self.graphics.middle_rect.collidepoint(mouse_pos):
+                            for tableau in self.game.tableaus:
+                                if len(tableau.cards) == 0:
+                                    continue
+                                
+                                top_card = tableau.cards[-1]
+                                top_card_rect = (top_card.suit, top_card.value)
+                                if self.graphics.card_visuals[top_card_rect].rect.collidepoint(middle_mouse_pos):
+                                    self.game.solitaire_clic_card_in_tableau(top_card)
+                                    print(f"Clic on card.rect in tableau {tableau.name}!")
+                                    return
+                                else:
+                                    for card in tableau.cards:
+                                        card_rect = (card.suit, card.value)
+                                        if self.graphics.card_visuals[card_rect].visible_rect.collidepoint(middle_mouse_pos):
+                                            print(f"Card visible_rect is {card.suit}, {card.value}")
+                                            self.game.solitaire_clic_card_in_tableau(card)
+                                            print(f"Clic on card.visible_rect!")
+                                            return
+                        
+
 
     def load_game(self):
         if self.active_game == "Solitaire":
@@ -107,6 +125,19 @@ class App:
         else:
             self.running = False
 
+    def solitaire_get_middle_offset(self, mouse_pos):
+        x_init = mouse_pos[0]
+        mouse_x = x_init - (self.graphics.left_side_stats[0] + self.graphics.space_between_tableaus)
+        mouse_y = 0
+
+        return mouse_x, mouse_y
+    
+    def solitaire_get_right_offset(self, mouse_pos):
+        x_init = mouse_pos[0]
+        mouse_x = x_init - (self.graphics.left_side_stats[0] + self.graphics.middle_coordinates[0])
+        mouse_y = 0
+
+        return mouse_x, mouse_y
 
     def update(self):
         # Mise à jour de la logique du jeu

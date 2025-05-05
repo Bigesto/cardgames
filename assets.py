@@ -117,6 +117,7 @@ class Pile:
         return i
     
     def _can_add_card(self, card):
+
         if len(self.cards) == 0:
             if self.ordered == "increasing":
                 if card.value != 1:

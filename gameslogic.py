@@ -89,6 +89,8 @@ class Solitaire:
         return False
         
     def solitaire_clic_card_in_tableau(self, card):
+        if not card.revealed:
+            return False
         tableau = None
         foundation = None
         position = None
@@ -102,11 +104,11 @@ class Solitaire:
         for tab in self.tableaus:
             if tab.name == card.in_pile:
                 tableau = tab
-                position = tableau.index(card)
+                position = tableau.cards.index(card)
         if not tableau:
             raise ValueError(f"""No tableau found, this should not happen.""")
         
-        if foundation._can_add_card(card) and card == tableau.cards[-1]:
+        if (card == tableau.cards[-1]) and foundation._can_add_card(card):
             foundation.cards.append(tableau.cards.pop())
             card.in_pile = foundation.name
             return True
@@ -121,7 +123,7 @@ class Solitaire:
                 tab.cards.extend(cards_to_move)
                 tableau.cards[position:] = []
                 return True
-        
+      
         return False
 
         # foundation = None
