@@ -55,8 +55,6 @@ class App:
                 if self.active_game == "Solitaire":
                     if event.type == pygame.MOUSEBUTTONDOWN:
                         mouse_pos =  pygame.mouse.get_pos()
-                        middle_mouse_pos = self.solitaire_get_middle_offset(mouse_pos)
-                        right_mouse_pos = self.solitaire_get_right_offset(mouse_pos)
                         pygame.draw.circle(self.screen, (255, 0, 255), mouse_pos, 5)  # Purple dot
                         pygame.display.update()  # Force an update to see it
 
@@ -64,11 +62,9 @@ class App:
                             if self.graphics.draw_rect.collidepoint(mouse_pos):
                                 if len(self.game.stock.cards) > 0:
                                     self.game.solitaire_draw_card()
-                                    print("Draw a card!")
                                     return
                                 else:
                                     self.game.stock.make_pile(self.game.waste)
-                                    print("Redo the stock!")
                                     return
                             
                             elif len(self.game.waste.cards) > 0:
@@ -76,7 +72,6 @@ class App:
                                 waste_card = (accessible_card_in_waste.suit, accessible_card_in_waste.value)
                                 if self.graphics.card_visuals[waste_card].rect.collidepoint(mouse_pos):
                                     self.game.solitaire_clic_card_in_waste(accessible_card_in_waste)
-                                    print(f"Clic on card.rect in waste!")
                                     return
                         
                         elif self.graphics.right_side_rect.collidepoint(mouse_pos):
@@ -86,9 +81,8 @@ class App:
 
                                 accessible_card = foundation.cards[-1]
                                 foundation_card = (accessible_card.suit, accessible_card.value)
-                                if self.graphics.card_visuals[foundation_card].rect.collidepoint(right_mouse_pos):
-                                    self.game.solitaire_clic_card_in_foundation(foundation_card)
-                                    print(f"Clic on card.rect in foundation {foundation.name}!")
+                                if self.graphics.card_visuals[foundation_card].rect.collidepoint(mouse_pos):
+                                    self.game.solitaire_clic_card_in_foundation(accessible_card)
                                     return
                         
                         elif self.graphics.middle_rect.collidepoint(mouse_pos):
@@ -98,17 +92,14 @@ class App:
                                 
                                 top_card = tableau.cards[-1]
                                 top_card_rect = (top_card.suit, top_card.value)
-                                if self.graphics.card_visuals[top_card_rect].rect.collidepoint(middle_mouse_pos):
+                                if self.graphics.card_visuals[top_card_rect].rect.collidepoint(mouse_pos):
                                     self.game.solitaire_clic_card_in_tableau(top_card)
-                                    print(f"Clic on card.rect in tableau {tableau.name}!")
                                     return
                                 else:
                                     for card in tableau.cards:
                                         card_rect = (card.suit, card.value)
-                                        if self.graphics.card_visuals[card_rect].visible_rect.collidepoint(middle_mouse_pos):
-                                            print(f"Card visible_rect is {card.suit}, {card.value}")
+                                        if self.graphics.card_visuals[card_rect].visible_rect.collidepoint(mouse_pos):
                                             self.game.solitaire_clic_card_in_tableau(card)
-                                            print(f"Clic on card.visible_rect!")
                                             return
                         
 

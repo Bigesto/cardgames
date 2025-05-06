@@ -43,7 +43,7 @@ class Deck:
 
         self.initialize_deck()
         if self.shuffled:
-            self.shuffle_deck(42)
+            self.shuffle_deck(2)
 
     
     def initialize_deck(self): #Initialise le deck du jeu. Est fonction de DeckType, lui-même fonction du type de jeu.

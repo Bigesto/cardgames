@@ -84,6 +84,8 @@ class Solitaire:
             if tableau._can_add_card(card):
                 tableau.cards.append(foundation.cards.pop())
                 card.in_pile = tableau.name
+                if len(tableau.cards) > 0:
+                    tableau._are_cards_up()
                 return True
         
         return False
@@ -111,6 +113,8 @@ class Solitaire:
         if (card == tableau.cards[-1]) and foundation._can_add_card(card):
             foundation.cards.append(tableau.cards.pop())
             card.in_pile = foundation.name
+            if len(tableau.cards) > 0:
+                tableau._are_cards_up()
             return True
         
         for tab in self.tableaus:
@@ -122,46 +126,8 @@ class Solitaire:
                     card.in_pile = tab.name
                 tab.cards.extend(cards_to_move)
                 tableau.cards[position:] = []
+                if len(tableau.cards) > 0:
+                    tableau._are_cards_up()
                 return True
       
         return False
-
-        # foundation = None
-        # for found in self.foundations:
-        #     if card in found.cards:
-        #         self.select_card(card)
-        #         return
-        #     if found.name == f"Foundation_{card.suit}":
-        #         foundation = found
-        #         print(f"{foundation.name} is foundation")
-        #         break
-        # if not foundation:
-        #     raise ValueError("No foundation found :(")
-        
-        # if len(self.temp.cards) > 0:
-        #     if destination and destination._can_add_card(self.temp.cards[0]):
-        #         self.temp_drop_selection(destination)
-        #         return
-        #     self.unselect_card()
-        #     print("cards unselected")
-        #     return
-
-        # if foundation._can_add_card(card):
-        #     origin = None
-        #     for pile in self.tableaus:
-        #         if pile.is_origin(card): #Méthode issue de la classe Pile, dans assets.
-        #             origin = pile
-        #             break
-            
-        #     if origin == None and self.waste.is_origin(card):
-        #         origin = self.waste
-
-        #     if origin == None:
-        #         raise ValueError(f"Card {card} doesn't have an origin pile. This shouldn't happen!")
-            
-        #     if card == origin.cards[-1]:
-        #         foundation.cards.append(card)
-        #         origin.cards.remove(card)
-        
-        # else:
-        #     self.select_card(card)

@@ -228,34 +228,32 @@ class SolitaireGraphics:
         self.right_side_rect = self.right_side.get_rect(topleft=self.right_side_coordinates)
         self.middle_rect = self.middle.get_rect(topleft=self.middle_coordinates)
 
-        print("Left side position:", self.left_side_coordinates)
-        print("Middle position:", self.middle_coordinates)
-        print("Right side position:", self.right_side_coordinates)
-        print("Middle right edge position:", self.middle_coordinates[0] + self.middle.get_width())
-        print("Right side left edge position:", self.right_side_coordinates[0])
+        available_width = self.screen_width - ((9 * self.card_width) + (4 * self.bordures_size))
+        self.space_between_tableaus = int(available_width / 8)
        
-        y_offset = 2 * self.bordures_size  # Ajout de card_height pour l'offset vertical
+        y_offset = 2 * self.bordures_size
+        x_offset = self.bordures_size
         for _ in range(2):
-            position = [self.bordures_size, y_offset]
+            position = [x_offset, y_offset]
             self.left_stands_positions.append(position)
             y_offset += self.card_height + self.bordures_size
         
         self.draw_rect = pygame.Rect(self.left_stands_positions[0][0], self.left_stands_positions[0][1], self.card_width, self.card_height)
 
-        y_offset = 2 * self.bordures_size
-        for _ in range(4):
-            position = [self.screen_width - self.card_width - self.bordures_size, y_offset]
-            self.right_stands_positions.append(position)
-            y_offset += self.card_height + self.bordures_size
-
-        available_width = self.screen_width - ((9 * self.card_width) + (4 * self.bordures_size))
-        self.space_between_tableaus = int(available_width / 8)
+        x_offset += self.card_width + self.bordures_size + self.space_between_tableaus
         y = 2 * self.bordures_size
-        x_offset = self.space_between_tableaus
         for _ in range(7):
             position = [x_offset, y]
             self.tableaus_positions.append(position)
             x_offset += self.card_width + self.space_between_tableaus
+
+        y_offset = 2 * self.bordures_size
+        x_offset = self.screen_width - self.card_width - self.bordures_size
+        for _ in range(4):
+            position = [x_offset, y_offset]
+            self.right_stands_positions.append(position)
+            y_offset += self.card_height + self.bordures_size
+
     
     def resize_cards(self):
         for key, cardgraph in self.card_visuals.items():
@@ -282,50 +280,6 @@ class SolitaireGraphics:
         self.right_side.fill((50, 190, 50))
         self.middle.fill((50, 250, 50))
         pygame.draw.rect(card_stand, (0, 0, 0), stand_rect, 2)
-        
-        # Dessiner les card stands sur les côtés en utilisant les positions précalculées
-        stock_position = self.left_stands_positions[0][0], self.left_stands_positions[0][1]
-        waste_position = self.left_stands_positions[1][0], self.left_stands_positions[1][1]
-
-        if len(self.game.stock.cards) < 1:
-            self.left_side.blit(card_stand, stock_position)
-        elif len(self.game.stock.cards) >= 1:
-            self.left_side.blit(self.back_card_visual, stock_position)
-        
-        if len(self.game.waste.cards) < 1:
-            self.left_side.blit(card_stand, waste_position)
-        elif len(self.game.waste.cards) >= 1:
-            to_show = (self.game.waste.cards[-1].suit, self.game.waste.cards[-1].value)
-            self.card_visuals[to_show].position = waste_position
-            self.card_visuals[to_show].draw_card_graphics(self.left_side)
-        
-        i = 0
-        for pos in self.right_stands_positions:
-            # Ajuster la position relative à right_side (soustraire l'offset vertical et horizontal)
-            relative_pos = (self.bordures_size, pos[1])
-            if len(self.game.foundations[i].cards) < 1:
-                self.right_side.blit(card_stand, relative_pos)
-            elif len(self.game.foundations[i].cards) >= 1:
-                to_show = (self.game.foundations[i].cards[-1].suit, self.game.foundations[i].cards[-1].value)
-                self.card_visuals[to_show].position = relative_pos
-                self.card_visuals[to_show].draw_card_graphics(self.right_side)
-            i += 1
-        
-        i = 0
-        for pos in self.tableaus_positions:
-            if len(self.game.tableaus[i].cards) < 1:
-                self.middle.blit(card_stand,(pos[0], pos[1]))
-            elif len(self.game.tableaus[i].cards) >= 1:
-                current_pos = pos.copy()
-                for card in self.game.tableaus[i].cards:
-                    if not card.revealed:
-                        self.middle.blit(self.back_card_visual, current_pos)
-                    else:
-                        to_show = (card.suit, card.value)
-                        self.card_visuals[to_show].position = current_pos
-                        self.card_visuals[to_show].draw_card_graphics(self.middle)
-                    current_pos[1] += self.card_height * TABLEAUS_PACING
-            i += 1
 
         # Ajouter les surfaces au plateau principal
         self.plateau.blit(self.left_side, self.left_side_coordinates)
@@ -334,6 +288,52 @@ class SolitaireGraphics:
         pygame.draw.rect(self.plateau, (255,0,0), self.left_side_rect, 2)
         pygame.draw.rect(self.plateau,(255,0,0), self.right_side_rect, 2)
         pygame.draw.rect(self.plateau,(255,0,0), self.middle_rect, 2)
+        
+        # Dessiner les card stands sur les côtés en utilisant les positions précalculées
+        stock_position = self.left_stands_positions[0][0], self.left_stands_positions[0][1]
+        waste_position = self.left_stands_positions[1][0], self.left_stands_positions[1][1]
+
+        if len(self.game.stock.cards) < 1:
+            self.plateau.blit(card_stand, stock_position)
+        elif len(self.game.stock.cards) >= 1:
+            self.plateau.blit(self.back_card_visual, stock_position)
+        
+        if len(self.game.waste.cards) < 1:
+            self.plateau.blit(card_stand, waste_position)
+        elif len(self.game.waste.cards) >= 1:
+            to_show = (self.game.waste.cards[-1].suit, self.game.waste.cards[-1].value)
+            self.card_visuals[to_show].position = waste_position
+            self.card_visuals[to_show].draw_card_graphics(self.plateau)
+        
+        i = 0
+        for pos in self.right_stands_positions:
+            # Ajuster la position relative à right_side (soustraire l'offset vertical et horizontal)
+            # relative_pos = (self.bordures_size, pos[1])
+            if len(self.game.foundations[i].cards) < 1:
+                self.plateau.blit(card_stand, pos)
+            elif len(self.game.foundations[i].cards) >= 1:
+                to_show = (self.game.foundations[i].cards[-1].suit, self.game.foundations[i].cards[-1].value)
+                self.card_visuals[to_show].position = pos
+                self.card_visuals[to_show].draw_card_graphics(self.plateau)
+            i += 1
+        
+        i = 0
+        for pos in self.tableaus_positions:
+            if len(self.game.tableaus[i].cards) < 1:
+                self.plateau.blit(card_stand,(pos[0], pos[1]))
+            elif len(self.game.tableaus[i].cards) >= 1:
+                current_pos = pos.copy()
+                for card in self.game.tableaus[i].cards:
+                    if not card.revealed:
+                        self.plateau.blit(self.back_card_visual, current_pos)
+                    else:
+                        to_show = (card.suit, card.value)
+                        self.card_visuals[to_show].position = current_pos
+                        self.card_visuals[to_show].draw_card_graphics(self.plateau)
+                    current_pos[1] += self.card_height * TABLEAUS_PACING
+            i += 1
+
+        
 
     def get_cards_graphics(self): # Attention, méthode a appeler AVANT de distribuer les cartes (méthode initialize_game() de gameslogic).
         # Crée le dictionnaire qui contiendra les surfaces au format {(card.suit, card.value): surface}.
