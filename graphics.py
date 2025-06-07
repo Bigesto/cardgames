@@ -129,13 +129,12 @@ class StartMenu(Menus):
 class InGameMenus(Menus):
     def __init__(self, screen):
         super().__init__(screen)
-        self.width = self.screen_width * GAME_MENU_RATIO
-        self.height = self.screen_height * GAME_MENU_RATIO
-        self.new_game = Buttons(0, 0, 10, 10, (0,0,0), "New Game", (250, 0, 0))
-        self.quit_game = Buttons(0, 0, 10, 10, (0,0,0), "Quit Game", (250, 0, 0))
+        self.width = self.screen_width
+        self.height = self.screen_height
+        self.new_game = None # Sera un bouton : Buttons(0, 0, 10, 10, (0,0,0), "New Game", (250, 0, 0))
+        self.quit_game = None # Sera un bouton : Buttons(0, 0, 10, 10, (0,0,0), "Quit Game", (250, 0, 0))
         self.score = Texts("Score is:", text_size=24)
         self.time = Texts("Time:", 24)
-
 
 class Buttons:
     def __init__(self, x, y, width, height, color=(0,0,0), text=None, hover_color=None):
@@ -207,6 +206,16 @@ class SolitaireGraphics:
 
         return self.card_width, self.card_height
     
+    def get_menu(self):
+        self.solitaire_menu.overall_coordinates = (0, int(self.screen_height - self.card_height))
+        self.solitaire_menu.height = int(self.card_height)
+
+        # self.solitaire_menu.new_game.x = int(self.card_width * BORDURES_RATIO_SOLITAIRE)
+        # self.solitaire_menu.new_game.y = int((self.screen_height - self.card_height) + (self.card_width * BORDURES_RATIO_SOLITAIRE))
+
+        # self.solitaire_menu.quit_game.x = int(self.card_width * BORDURES_RATIO_SOLITAIRE)
+        # self.solitaire_menu.quit_game.y = int((self.screen_height - self.card_height) + 3 * (self.card_width * BORDURES_RATIO_SOLITAIRE))
+    
     def init_card_stands_positions(self):
         self.left_stands_positions = [] # Positions de la pioche[0] et de la défausse[1].
         self.right_stands_positions = [] # Positions des foundations [0] à [4].
@@ -222,7 +231,6 @@ class SolitaireGraphics:
         self.middle_stats = (int(self.screen_width - 2 * (self.card_width + 2 * self.bordures_size)), int(self.screen_height - self.card_height))
         self.middle = pygame.Surface(self.middle_stats)
         self.middle_coordinates = (int(self.card_width + 2 * self.bordures_size), 0)
-
 
         self.left_side_rect = self.left_side.get_rect(topleft=self.left_side_coordinates)        
         self.right_side_rect = self.right_side.get_rect(topleft=self.right_side_coordinates)

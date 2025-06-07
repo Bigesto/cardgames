@@ -111,6 +111,7 @@ class App:
             self.graphics.get_cards_graphics()
             self.game.initialize_game()
             self.graphics.init_card_stands_positions()
+            self.graphics.get_menu()
             self.graphics.resize_cards()
         
         else:
