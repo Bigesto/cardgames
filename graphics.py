@@ -210,12 +210,21 @@ class SolitaireGraphics:
         self.solitaire_menu.overall_coordinates = (0, int(self.screen_height - self.card_height))
         self.solitaire_menu.height = int(self.card_height)
 
-        # self.solitaire_menu.new_game.x = int(self.card_width * BORDURES_RATIO_SOLITAIRE)
-        # self.solitaire_menu.new_game.y = int((self.screen_height - self.card_height) + (self.card_width * BORDURES_RATIO_SOLITAIRE))
+        self.solitaire_menu.new_game = Buttons(int(self.card_width * BORDURES_RATIO_SOLITAIRE),
+                                               int((self.screen_height - self.card_height) + (self.card_width * BORDURES_RATIO_SOLITAIRE)),
+                                               10,
+                                               10,
+                                               (0,0,0),
+                                               "New Game",
+                                               (250, 0, 0)
+                                            )
 
         # self.solitaire_menu.quit_game.x = int(self.card_width * BORDURES_RATIO_SOLITAIRE)
         # self.solitaire_menu.quit_game.y = int((self.screen_height - self.card_height) + 3 * (self.card_width * BORDURES_RATIO_SOLITAIRE))
-    
+
+
+
+
     def init_card_stands_positions(self):
         self.left_stands_positions = [] # Positions de la pioche[0] et de la défausse[1].
         self.right_stands_positions = [] # Positions des foundations [0] à [4].
